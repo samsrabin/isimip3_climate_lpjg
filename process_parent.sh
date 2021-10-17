@@ -6,73 +6,181 @@ set -e
 # Submits a series of jobs that convert the original GGCMI phase 3 climate forcing netCDFs into versions that LPJ-GUESS can work with. Each job is a call to process_child.sh; see that script for more details. Jobs are submitted via Slurm and will run in sequence (one after the other).
 #
 #
-# USAGE
-#
-# process_parent.sh $phase $period $gcm
-#
-#    phase:  3a or 3b
-#    period: Quoted, space-separated list of time periods to process.
-#            E.g.: "picontrol historical ssp126 ssp370 ssp585"
-#    gcm:    GFDL-ESM4, IPSL-CM6A-LR, MPI-ESM1-2-HR, MRI-ESM2-0, or UKESM1-0-LL
-#            (not case-sensitive)
 ###############################################################
 
-# Just list files that will be processed?
-justlist=0
-
-# If testing is anything other than zero: Only process pr
-testing=0
+# If testing: how many files?
 ntest=3
 
-# Which partition to use?
-#partition="interlagos"
-#partition="sandy"
-#partition="fat"
+#########################################################################
+# Function-parsing code from https://gist.github.com/neatshell/5283811
+
+script="process_parent.sh"
+
+#Declare the number of mandatory args
+margs=1
+
+# Common functions - BEGIN
+function example {
+echo -e "example: $script-g GFDL-ESM4 -p \"picontrol historical\" -x"
+}
+
+function usage {
+echo -e "usage: $script -g GCM_OR_REANALYSIS [-p "PERIOD1 PERIOD2" -x]\n"
+}
+
+function help {
+usage
+echo -e "MANDATORY:"
+echo -e "  GCM_OR_REANALYSIS  The GCM(s) (3b) or reanalysis product(s) (3a) to upload. One of: GSWP3, GSWP3-W5E5, GFDL-ESM4, IPSL-CM6A-LR, MPI-ESM1-2-HR, MRI-ESM2-0, or UKESM1-0-LL.\n"
+echo -e "OPTIONAL:"
+echo -e "  -d, --dependency JOBNUM  Job number on which the first submitted processing job will depend."
+echo -e "  -p, --periods VAL        Space-separated list of periods to upload. Default is all periods for the phase associated with the given GCM or reanalysis product."
+echo -e "  -P, --partition VAL      Partition to use."
+echo -e "  -t, --testing            Add this flag to only process precip (and only ${ntest} files of that)."
+echo -e "  -v, --variables VAL      Space-separated list of climate variables to upload. Default is all: \"hurs pr rsds sfcwind tas tasmax tasmin\""
+echo -e "  -x, --execute            Add this flag to actually submit the processing, instead of just listing what will be processed."
+echo -e "  -h,  --help              Prints this help\n"
+example
+}
+
+# Ensures that the number of passed args are at least equals
+# to the declared number of mandatory args.
+# It also handles the special case of the -h or --help arg.
+function margs_precheck {
+if [ $2 ] && [ $1 -lt $margs ]; then
+    if [ $2 == "--help" ] || [ $2 == "-h" ]; then
+        help
+        exit
+    else
+        usage
+        example
+        exit 1 # error
+    fi
+fi
+}
+
+# Ensures that all the mandatory args are not empty
+function margs_check {
+if [ $# -lt $margs ]; then
+    usage
+    example
+    exit 1 # error
+fi
+}
+# Common functions - END
+
+# Main
+margs_precheck $# $1
+
+# Get GCM (or reanalysis product)
+gcm=$1
+if [[ "${gcm}" == "" ]]; then
+    echo "You must provide a GCM or reanalysis product"
+    exit 1
+fi
+shift
+products_3a=("GSWP3" "GSWP3-W5E5")
+products_3b=("GFDL-ESM4" "IPSL-CM6A-LR" "MPI-ESM1-2-HR" "MRI-ESM2-0" "UKESM1-0-LL")
+containsElement () {
+    local e match="$1"
+    shift
+    for e; do 
+        if [[ "$e" == "$match" ]]; then
+            echo 1
+            return 0
+        fi
+    done
+    echo 0
+    return 0
+}
+
+# Set (default values of) phase-dependent variables
+if [[ "$(containsElement "${gcm}" "${products_3a[@]}")" -eq 1 ]]; then
+    phase="3a"
+    echo "What period list should be used by default for 3a?"
+    exit 1
+elif [[ "$(containsElement "${gcm}" "${products_3b[@]}")" -eq 1 ]]; then
+    phase="3b"
+    period_list="picontrol historical ssp126 ssp585"
+else
+    echo "Phase not known for GCM/reanalysis product ${gcm}"
+    exit 1
+fi
+dir_phase="climate${phase}"
+
+# Set other default values
+testing=0
 partition="iojobs"
-#partition="ivy"
-#partition="ivyshort"
+justlist=1
+dependency=""
+varlist="hurs pr rsds sfcwind tas tasmax tasmin"
+
+# Args while-loop
+while [ "$1" != "" ];
+do
+    case $1 in
+        -g  | --gcm )  shift
+            gcm=$1
+            ;;
+        -x  | --execute  )  justlist=0
+            ;;
+        -t  | --testing  )  testing=1
+            ;;
+        -p  | --periods )  shift
+            period_list=$1
+            ;;
+        -P  | --partition)  shift
+            partition=$1
+            ;;
+        -d  | --dependency )  shift
+            dependency="-d afterany:$1"
+            ;;
+        -v  | --variables)  shift
+            varlist=$1
+            ;;
+        -h   | --help )        help
+            exit
+            ;;
+        *)
+            echo "$script: illegal option $1"
+            usage
+            example
+            exit 1 # error
+            ;;
+    esac
+    shift
+done
+
+# Pass here your mandatory args for check
+margs_check $gcm
+
+# End function-parsing code
+#########################################################################
 
 # Which child script to use?
 childscript=process_child.sh
 
-# How much memory should each child process use?
-if [[ "${testing}" == 0 ]]; then
-	childmem="62G"
-else
+# Set up testing vs. not
+if [[ "${testing}" != 0 ]]; then
 	childmem="8G"
+	varlist="pr"
+else
+	childmem="62G"
 fi
 
 # Deflation level
 deflate_lvl=1
 
-# Get list of variables to process
-if [[ "${testing}" == 0 ]]; then
-	varlist="pr hurs rsds sfcwind tas tasmax tasmin"
-else
-	varlist="pr"
-fi
-
-# Arguments: Phase, period, and GCM
-. ./get_arguments.sh
-period_list=$2
-if [[ "${period_list}" == "" ]]; then
-	echo "You must provide an argument (2nd) for period_list."
-	exit 1
-else
-	for period in ${period_list}; do
-		if [[ ! -d "${dir_phase}/${period}" ]]; then
-			echo "${dir_phase}/${period}/ does not exist."
-			exit 1
-		elif [[ ! -d "${dir_phase}/${period}/${gcm}" ]]; then
-			echo "${dir_phase}/${period}/${gcm}/ does not exist."
-			exit 1
-		fi
-	done
-fi
-
-# Set up
-dependency=""
-#dependency="-d afterany:164280"
+# Check period list
+for period in ${period_list}; do
+	if [[ ! -d "${dir_phase}/${period}" ]]; then
+		echo "${dir_phase}/${period}/ does not exist."
+		exit 1
+	elif [[ ! -d "${dir_phase}/${period}/${gcm}" ]]; then
+		echo "${dir_phase}/${period}/${gcm}/ does not exist."
+		exit 1
+	fi
+done
 
 # Sanity checks
 if [[ ! -e ${childscript} ]]; then
@@ -134,7 +242,7 @@ if [[ ${justlist} == 0 ]]; then
 	echo "All submitted!"
 	date
 else
-	echo "Nothing submitted because \$justlist != 0"
+	echo "Nothing submitted; add -x to submit."
 fi
 
 exit 0
