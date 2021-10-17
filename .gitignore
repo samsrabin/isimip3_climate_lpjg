@@ -1,0 +1,4 @@
+.*.swp
+*out
+logs/
+climate3b/
