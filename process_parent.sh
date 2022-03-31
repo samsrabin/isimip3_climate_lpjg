@@ -21,7 +21,7 @@ margs=1
 
 # Common functions - BEGIN
 function example {
-echo -e "example: $script-g GFDL-ESM4 -p \"picontrol historical\" -x"
+echo -e "example: $script -g GFDL-ESM4 -p \"picontrol historical\" -x"
 }
 
 function usage {
@@ -34,10 +34,11 @@ echo -e "MANDATORY:"
 echo -e "  GCM_OR_REANALYSIS  The GCM(s) (3b) or reanalysis product(s) (3a) to upload. One of: GSWP3, GSWP3-W5E5, GFDL-ESM4, IPSL-CM6A-LR, MPI-ESM1-2-HR, MRI-ESM2-0, or UKESM1-0-LL.\n"
 echo -e "OPTIONAL:"
 echo -e "  -d, --dependency JOBNUM  Job number on which the first submitted processing job will depend."
-echo -e "  -p, --periods VAL        Space-separated list of periods to upload. Default is all periods for the phase associated with the given GCM or reanalysis product."
+echo -e "  -p, --periods VAL        Space-separated list of periods to process. Default is all periods for the phase associated with the given GCM or reanalysis product."
 echo -e "  -P, --partition VAL      Partition to use."
+echo -e "  -s, --subperiods VAL     Space-separated list of subperiods to process. Only applies for picontrol period. Default is all: \"picontrol historical ssp126\"."
 echo -e "  -t, --testing            Add this flag to only process precip (and only ${ntest} files of that)."
-echo -e "  -v, --variables VAL      Space-separated list of climate variables to upload. Default is all: \"hurs pr rsds sfcwind tas tasmax tasmin\""
+echo -e "  -v, --variables VAL      Space-separated list of climate variables to process. Default is all: \"hurs pr rsds sfcwind tas tasmax tasmin\""
 echo -e "  -x, --execute            Add this flag to actually submit the processing, instead of just listing what will be processed."
 echo -e "  -h,  --help              Prints this help\n"
 example
@@ -114,20 +115,21 @@ partition="iojobs"
 justlist=1
 dependency=""
 varlist="hurs pr rsds sfcwind tas tasmax tasmin"
+subperiod_list="picontrol historical ssp126"
 
 # Args while-loop
 while [ "$1" != "" ];
 do
     case $1 in
-        -g  | --gcm )  shift
-            gcm=$1
-            ;;
         -x  | --execute  )  justlist=0
             ;;
         -t  | --testing  )  testing=1
             ;;
         -p  | --periods )  shift
             period_list=$1
+            ;;
+        -s  | --subperiods)  shift
+            subperiod_list="$1"
             ;;
         -P  | --partition)  shift
             partition=$1
@@ -202,7 +204,8 @@ for period in ${period_list}; do
 	gcmdir_orig="${dir_period}/${gcm}"
 
 	# What are all the years in this period?
-	# (will be overwritten using $period_actual if $period=="picontrol")
+	# (will be overwritten using $period_actual, called from submit_child.sh,
+    # if $period=="picontrol")
 	. ./get_years.sh
 
 	# Set up directories
@@ -214,8 +217,7 @@ for period in ${period_list}; do
 	# Submit if needed, looping through sub-periods of picontrol if needed
 	for var in ${varlist}; do
 		if [[ "${period}" == "picontrol" ]]; then
-			# Only need one of the future periods
-			for period_actual in picontrol historical ssp126; do
+			for period_actual in ${subperiod_list}; do
 				. ./submit_child.sh
 			done
 		else
