@@ -79,6 +79,7 @@ if [[ "${gcm}" == "" ]]; then
     echo "You must provide a GCM or reanalysis product"
     exit 1
 fi
+gcm_lower=$(echo ${gcm} | tr '[:upper:]' '[:lower:]') # Ensure lowercase
 shift
 products_3a=("GSWP3" "GSWP3-W5E5")
 products_3b=("GFDL-ESM4" "IPSL-CM6A-LR" "MPI-ESM1-2-HR" "MRI-ESM2-0" "UKESM1-0-LL")

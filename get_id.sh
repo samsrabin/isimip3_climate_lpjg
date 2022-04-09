@@ -1,5 +1,6 @@
 #!/bin/bash
 
+gcm_lower=$(echo ${gcm} | tr '[:upper:]' '[:lower:]') # Ensure lowercase
 if [[ "${gcm_lower}" == "mpi-esm1-2-hr" || "${gcm_lower}" == "mri-esm2-0" ]]; then
 	gcm_token=${gcm_lower:0:3}
 else
@@ -20,6 +21,4 @@ if [[ ${period_actual} == "" ]]; then
 else
 	thisid="${phase}-${period:0:2}${pa_token}-${gcm_token}-${var}"
 fi
-
-
 
