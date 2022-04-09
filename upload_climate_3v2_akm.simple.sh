@@ -24,7 +24,7 @@ echo -e "usage: $script -s SERVER [-t TIMEOUT -b MAXBANDWIDTH -x]\n"
 function help {
 usage
 echo -e "MANDATORY:"
-echo -e "  -s, --server  VAL   The shortname of the server we'll be uploading to (fh, uc, or mistral)"
+echo -e "  -s, --server  VAL   The shortname of the server we'll be uploading to (fh, uc, mistral, or levante)"
 echo -e "OPTIONAL:"
 echo -e "  -x, --execute Add this flag to actually start the upload instead of just doing a dry run."
 echo -e "  -t, --timeout VAL  Timeout period for rsync (seconds). Default 15."
@@ -112,6 +112,8 @@ if [[ "${server}" == "fhlr2" ]] || [[ "${server}" == "fh2" ]] || [[ "${server}" 
 	remote_dir_top="/home/fh2-project-lpjgpi/lr8247/ggcmi/phase3/ISIMIP3/climate_land_only_v2"
 elif [[ "${server}" == "mistral" ]]; then
 	remote_dir_top="/scratch/b/b380566/ISIMIP3/climate_land_only_v2"
+elif [[ "${server}" == "levante" ]]; then
+	remote_dir_top="/home/b/b380566/ISIMIP3/climate_land_only_v2"
 elif [[ "${server}" == "uc" ]]; then
 	remote_dir_top="/pfs/work7/workspace/scratch/lr8247-isimip3_climate-0/climate_land_only_v2"
 else
@@ -123,6 +125,7 @@ fi
 ssh ${server} mkdir -p "${remote_dir_top}"
 
 transfertxt="--include=*sh --include=*nc4 --include=*/*-lpjg/ --include=*/*/ --include=*/ --exclude=* * ${server}:${remote_dir_top}/"
+#transfertxt="--include=mri*picontrol*nc4 --include=*/*-lpjg/ --include=*/*/ --include=*/ --exclude=* * ${server}:${remote_dir_top}/"
 
 if [[ ${execute} -eq 0 ]]; then
 	rsync -ah --dry-run -v --stats --partial --prune-empty-dirs ${transfertxt}
