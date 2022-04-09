@@ -1,7 +1,8 @@
 #!/bin/bash
+#SBATCH --mem 32G
 #SBATCH -p sandy
 #SBATCH -t 24:00:00
-#SBATCH --mem 32G
+#SBATCH -n 1
 module load app/cdo
 
 # Based on Christoph's script at https://ebi-forecast.igb.illinois.edu/ggcmi/issues/357
