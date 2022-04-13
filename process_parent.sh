@@ -175,15 +175,19 @@ fi
 deflate_lvl=1
 
 # Check period list
-for period in ${period_list}; do
-	if [[ ! -d "${dir_phase}/${period}" ]]; then
-		echo "${dir_phase}/${period}/ does not exist."
-		exit 1
-	elif [[ ! -d "${dir_phase}/${period}/${gcm}" ]]; then
-		echo "${dir_phase}/${period}/${gcm}/ does not exist."
-		exit 1
-	fi
-done
+if [[ "${dependency}" == "" ]]; then
+    for period in ${period_list}; do
+    	if [[ ! -d "${dir_phase}/${period}" ]]; then
+    		echo "${dir_phase}/${period}/ does not exist."
+    		exit 1
+    	elif [[ ! -d "${dir_phase}/${period}/${gcm}" ]]; then
+    		echo "${dir_phase}/${period}/${gcm}/ does not exist."
+    		exit 1
+    	fi
+    done
+else
+    echo "Skipping check for existence of ${dir_phase}/${period} because dependency is specified."
+fi
 
 # Sanity checks
 if [[ ! -e ${childscript} ]]; then
