@@ -1,4 +1,7 @@
 #!/bin/bash
+#SBATCH -n 1
+#SBATCH -p iojobs
+#SBATCH -t 48:00:00
 set -e
 
 # Downloads climate files from Midway cluster, with an "automated kicking machine" to ensure that the transfer is restarted when the connection goes bad for some reason.
