@@ -18,6 +18,6 @@ if [[ ${justlist} == 0 ]]; then
    fi
    
    # Update dependency, requiring jobs to run serially
-   dependency="-d afterany:${thisJob}"
+   dependency="-d ${depend_after}:${thisJob}"
 fi
 

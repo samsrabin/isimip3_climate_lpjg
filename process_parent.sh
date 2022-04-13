@@ -136,7 +136,14 @@ do
             partition=$1
             ;;
         -d  | --dependency )  shift
-            dependency="-d afterany:$1"
+            if [[ "$1" == "after"* ]]; then
+                depend_after=$(echo $1 | grep -oE "^after[a-z]+")
+                depend_job=$(echo $1 | grep -oE "[0-9]+")
+            else
+                depend_after="afterany"
+                depend_job="$1"
+            fi
+            dependency="-d ${depend_after}:${depend_job}"
             ;;
         -v  | --variables)  shift
             varlist=$1
