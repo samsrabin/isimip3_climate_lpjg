@@ -1,4 +1,7 @@
 #!/bin/bash
+#SBATCH -n 1
+#SBATCH -p iojobs
+#SBATCH -t 48:00:00
 set -e
 
 # Uploads climate files from Midway cluster, with an "automated kicking machine" to ensure that the transfer is restarted when the connection goes bad for some reason.
@@ -67,11 +70,19 @@ server=
 execute=0
 timeout=15
 bwlimit="10M"
+gcm=""
+period=""
 
 # Args while-loop
 while [ "$1" != "" ];
 do
 	case $1 in
+		-g  | --gcm)  shift
+			gcm=$1
+			;;
+		-p  | --period)  shift
+			period=$1
+			;;
 		-s  | --server )  shift
 			server=$1
 			;;
@@ -95,6 +106,15 @@ do
 	esac
 	shift
 done
+ending="*nc4"
+if [[ "${gcm}" != "" ]]; then
+    gcm="${gcm}*"
+    ending="nc4"
+fi
+if [[ "${period}" != "" ]]; then
+    period="${period}*"
+    ending="nc4"
+fi
 
 # Pass here your mandatory args for check
 margs_check $server $gcm
@@ -124,8 +144,9 @@ fi
 # Create that directory, if needed
 ssh ${server} mkdir -p "${remote_dir_top}"
 
-transfertxt="--include=*sh --include=*nc4 --include=*/*-lpjg/ --include=*/*/ --include=*/ --exclude=* * ${server}:${remote_dir_top}/"
-#transfertxt="--include=mri*picontrol*nc4 --include=*/*-lpjg/ --include=*/*/ --include=*/ --exclude=* * ${server}:${remote_dir_top}/"
+#transfertxt="--include=*sh --include=*nc4 --include=*/*-lpjg/ --include=*/*/ --include=*/ --exclude=* * ${server}:${remote_dir_top}/"
+#transfertxt="--include=gfdl*ssp370*nc4 --include=*/*-lpjg/ --include=*/*/ --include=*/ --exclude=* * ${server}:${remote_dir_top}/"
+transfertxt="--include=${gcm}${period}${ending} --include=*/*-lpjg/ --include=*/*/ --include=*/ --exclude=* * ${server}:${remote_dir_top}/"
 
 if [[ ${execute} -eq 0 ]]; then
 	rsync -ah --dry-run -v --stats --partial --prune-empty-dirs ${transfertxt}
