@@ -72,6 +72,7 @@ timeout=15
 bwlimit="10M"
 gcm=""
 period=""
+vars="hurs pr rsds sfcwind tas tasmax tasmin"
 
 # Args while-loop
 while [ "$1" != "" ];
@@ -85,6 +86,9 @@ do
 			;;
 		-s  | --server )  shift
 			server=$1
+			;;
+		-v  | --vars )  shift
+			vars="$1"
 			;;
 		-x  | --execute  )  execute=1
 			;;
@@ -115,6 +119,14 @@ if [[ "${period}" != "" ]]; then
     period="${period}*"
     ending="nc4"
 fi
+if [[ "${ending}" == "nc4" ]]; then
+    beginning="${gcm}${period}"
+else
+    beginning="*"
+fi
+for v in ${vars}; do
+    incl_var_list="${incl_var_list} --include=${beginning}_${v}_*nc4" 
+done
 
 # Pass here your mandatory args for check
 margs_check $server $gcm
@@ -144,9 +156,7 @@ fi
 # Create that directory, if needed
 ssh ${server} mkdir -p "${remote_dir_top}"
 
-#transfertxt="--include=*sh --include=*nc4 --include=*/*-lpjg/ --include=*/*/ --include=*/ --exclude=* * ${server}:${remote_dir_top}/"
-#transfertxt="--include=gfdl*ssp370*nc4 --include=*/*-lpjg/ --include=*/*/ --include=*/ --exclude=* * ${server}:${remote_dir_top}/"
-transfertxt="--include=${gcm}${period}${ending} --include=*/*-lpjg/ --include=*/*/ --include=*/ --exclude=* * ${server}:${remote_dir_top}/"
+transfertxt="${incl_var_list} --include=*/*-lpjg/ --include=*/*/ --include=*/ --exclude=* * ${server}:${remote_dir_top}/"
 
 if [[ ${execute} -eq 0 ]]; then
 	rsync -ah --dry-run -v --stats --partial --prune-empty-dirs ${transfertxt}
