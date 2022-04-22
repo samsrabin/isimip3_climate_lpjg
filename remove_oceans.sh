@@ -11,6 +11,9 @@ unmasked_dir="$1"
 if [[ "${unmasked_dir}" == "" ]]; then
     echo "You must provide unmasked_dir"
     exit 1
+elif [[ ! -e "${unmasked_dir}" ]]; then
+    echo "unmasked_dir (${unmasked_dir}) does not exist!"
+    exit 1
 fi
 masked_dir="${unmasked_dir/-withocean/}"
 mkdir -p "${masked_dir}"
