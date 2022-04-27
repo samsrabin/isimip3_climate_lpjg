@@ -178,6 +178,9 @@ if [[ "${phase}" == "3a" ]]; then
     # Where will we be downloading to?
     local_dir=climate3a/${period}/${clim}/${reanalysis}-withocean
 elif [[ "${phase}" == "3b" ]]; then
+    if [[ "${clim}" != "" ]]; then
+        echo "-c/--clim ${} is ignored for phase 3b"
+    fi
     if [[ "${reanalysis}" != "" ]]; then
         echo "-r/--reanalysis ${reanalysis} is ignored for phase 3b"
     fi
@@ -191,7 +194,7 @@ elif [[ "${phase}" == "3b" ]]; then
     # Where will we be downloading to?
     local_dir=climate3b/${period}/${gcm}-withocean
 fi
-mkdir -p "${local_dir}"riod}/${gcm}-withocean
+mkdir -p "${local_dir}"
 
 # Make sure GCM name is uppercase
 #gcm=$(echo "$gcm" | tr '[:upper:]' '[:lower:]')
