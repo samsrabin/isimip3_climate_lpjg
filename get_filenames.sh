@@ -30,10 +30,10 @@ done
 
 file_generic=$(ls *_${var}_*.nc 2>/dev/null | head -n 1)
 file_concat=${gcmdir_tmp}/$(echo ${file_generic} | sed "s@_[0-9][0-9][0-9][0-9]_@_${firstyear}_@")
-file_concat=$(echo ${file_concat} | sed "s@_[0-9][0-9][0-9][0-9].nc@_${lastyear}.nc@")
-file_nc4_big=$(echo ${file_concat} | sed "s@.nc@.big.nc4@")
+file_concat=$(echo ${file_concat} | sed "s@_[0-9][0-9][0-9][0-9]\.nc@_${lastyear}.nc@")
+file_nc4_big=$(echo ${file_concat} | sed "s@\.nc@.big.nc4@")
 #file_nc4=$(echo ${file_nc4_big} | sed "s@.big@@")
-file_nc4=${gcmdir_lpjg}/$(basename ${file_nc4_big} | sed "s@.big@@")
+file_nc4=${gcmdir_lpjg}/$(basename ${file_nc4_big} | sed "s@\.big@@")
 popd > /dev/null
 
 #echo $file_in_list0
