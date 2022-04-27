@@ -103,7 +103,7 @@ if [[ "$(containsElement "${gcm}" "${products_3a[@]}")" -eq 1 ]]; then
     exit 1
 elif [[ "$(containsElement "${gcm}" "${products_3b[@]}")" -eq 1 ]]; then
     phase="3b"
-    period_list="picontrol historical ssp126 ssp585"
+    period_list="picontrol historical ssp126 ssp370 ssp585"
 else
     echo "Phase not known for GCM/reanalysis product ${gcm}"
     exit 1
