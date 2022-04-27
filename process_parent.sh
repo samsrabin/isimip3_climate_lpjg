@@ -78,6 +78,9 @@ gcm=$1
 if [[ "${gcm}" == "" ]]; then
     echo "You must provide a GCM or reanalysis product"
     exit 1
+elif [[ "${gcm}" == "-h" || "${gcm}" == "--help" ]]; then
+    help
+    exit
 fi
 gcm_lower=$(echo ${gcm} | tr '[:upper:]' '[:lower:]') # Ensure lowercase
 shift
