@@ -29,7 +29,6 @@ set -e
 #    gcmdir_orig: Directory containing the files before processing to LPJ-GUESS inputs.
 #    ntest:   Set to the number of years you want to include in a test run of this script. Only required (and used) if testing!=0.
 #
-# Looks for files in climate${phase}/${period}/${gcm}/. Note that all letters in this path must be lowercase.
 ###############################################################
 
 
@@ -60,10 +59,19 @@ echo "availmem: ${availmem}"
 echo "partition: ${partition}"
 
 # Arguments: Phase, period, and GCM
-. ./get_arguments.sh
+phase=$1
+if [[ "${phase}" != "3a" && "${phase}" != "3b" ]]; then
+   echo "First argument (phase) must be either 3a or 3b, not '${phase}'"
+   exit 1
+fi
 period=$2
 if [[ "${period}" == "" ]]; then
-   echo "You must provide an argument (2nd) for period"
+   echo "You must provide an argument for period"
+   exit 1
+fi
+gcm=$(echo $3 | tr '[:lower:]' '[:upper:]') # Ensure uppercase
+if [[ "${gcm}" == "" ]]; then
+   echo "You must provide an argument for gcm."
    exit 1
 fi
 period_actual=$4
