@@ -28,13 +28,22 @@ function usage {
 echo -e "usage: $script -g GCM_OR_REANALYSIS [-p "PERIOD1 PERIOD2" -x]\n"
 }
 
+clim_list="counterclim obsclim spinclim transclim"
+period_list_3a="historical"
+period_list_3b="picontrol historical ssp126 ssp370 ssp585"
+products_3a=("GSWP3-W5E5" "20CRv3" "20CRv3-ERA5" "20CRv3-W5E5")
+products_3b=("GFDL-ESM4" "IPSL-CM6A-LR" "MPI-ESM1-2-HR" "MRI-ESM2-0" "UKESM1-0-LL")
+
+
 function help {
 usage
 echo -e "MANDATORY:"
-echo -e "  GCM_OR_REANALYSIS  The GCM(s) (3b) or reanalysis product(s) (3a) to upload. One of: GSWP3, GSWP3-W5E5, GFDL-ESM4, IPSL-CM6A-LR, MPI-ESM1-2-HR, MRI-ESM2-0, or UKESM1-0-LL.\n"
+echo -e "  GCM_OR_REANALYSIS  The GCM(s) (3b) or reanalysis product(s) (3a) to upload. One of (3a) ${products_3a[@]} (3b) ${products_3a[@]}."
+echo -e "OPTIONAL for phase 3a (ignored for 3b):"
+echo -e "  -c, --clim       VAL   The \"clim\" we'll be processing (${clim_list})"
 echo -e "OPTIONAL:"
 echo -e "  -d, --dependency JOBNUM  Job number on which the first submitted processing job will depend."
-echo -e "  -p, --periods VAL        Space-separated list of periods to process. Default is all periods for the phase associated with the given GCM or reanalysis product."
+echo -e "  -p, --periods VAL        Space-separated list of periods to process. Default is all periods for the phase associated with the given GCM or reanalysis product (3a: ${period_list_3a}; 3b: ${period_list_3b})."
 echo -e "  -P, --partition VAL      Partition to use."
 echo -e "  -s, --subperiods VAL     Space-separated list of subperiods to process. Only applies for picontrol period. Default is all: \"picontrol historical ssp126\"."
 echo -e "  -t, --testing            Add this flag to only process precip (and only ${ntest} files of that)."
@@ -84,8 +93,6 @@ elif [[ "${gcm}" == "-h" || "${gcm}" == "--help" ]]; then
 fi
 gcm_lower=$(echo ${gcm} | tr '[:upper:]' '[:lower:]') # Ensure lowercase
 shift
-products_3a=("GSWP3" "GSWP3-W5E5")
-products_3b=("GFDL-ESM4" "IPSL-CM6A-LR" "MPI-ESM1-2-HR" "MRI-ESM2-0" "UKESM1-0-LL")
 containsElement () {
     local e match="$1"
     shift
@@ -102,11 +109,15 @@ containsElement () {
 # Set (default values of) phase-dependent variables
 if [[ "$(containsElement "${gcm}" "${products_3a[@]}")" -eq 1 ]]; then
     phase="3a"
-    echo "What period list should be used by default for 3a?"
-    exit 1
+    period_list="${period_list_3a}"
+    if [[ "${gcm}" == "20CRv3"* ]]; then
+        echo "Restricting clim_list for ${gcm} to obsclim only."
+        clim_list="obsclim"
+    fi
 elif [[ "$(containsElement "${gcm}" "${products_3b[@]}")" -eq 1 ]]; then
     phase="3b"
-    period_list="picontrol historical ssp126 ssp370 ssp585"
+    period_list="${period_list_3b}"
+    clim_list=""
 else
     echo "Phase not known for GCM/reanalysis product ${gcm}"
     exit 1
@@ -126,6 +137,9 @@ subperiod_list="picontrol historical ssp126"
 while [ "$1" != "" ];
 do
     case $1 in
+        -c  | --clim)  shift
+            clim_list="$1"
+            ;;
         -x  | --execute  )  justlist=0
             ;;
         -t  | --testing  )  testing=1
@@ -171,6 +185,11 @@ margs_check $gcm
 # End function-parsing code
 #########################################################################
 
+if [[ ${phase} == "3b" && "${clim_list}" != "" ]]; then
+    echo "-c/--clim ${clim} is ignored for phase 3b"
+    clim_list=""
+fi
+
 # Which child script to use?
 childscript=process_child.sh
 
@@ -187,15 +206,20 @@ deflate_lvl=1
 
 # Check period list
 if [[ "${dependency}" == "" ]]; then
+    for clim in ${clim_list}; do
     for period in ${period_list}; do
     	if [[ ! -d "${dir_phase}/${period}" ]]; then
     		echo "${dir_phase}/${period}/ does not exist."
     		exit 1
-    	elif [[ ! -d "${dir_phase}/${period}/${gcm}" ]]; then
+    	elif [[ ${phase} == "3a" && ! -d "${dir_phase}/${period}/${clim}/${gcm}" ]]; then
+    		echo "${dir_phase}/${period}/${clim}/${gcm}/ does not exist."
+    		exit 1
+    	elif [[ ${phase} == "3b" && ! -d "${dir_phase}/${period}/${gcm}" ]]; then
     		echo "${dir_phase}/${period}/${gcm}/ does not exist."
     		exit 1
     	fi
     done
+    done # clim
 else
     echo "Skipping check for existence of ${dir_phase}/${period} because dependency is specified."
 fi
@@ -213,11 +237,16 @@ echo "child memory: ${childmem}"
 date
 echo " "
 
-# Submit jobs, looping through periods and variables
+# Submit jobs, looping through periods and variables (and clim_list, if 3a)
+for clim in ${clim_list}; do
 for period in ${period_list}; do
 
-	dir_period="${dir_phase}/${period}"
-	gcmdir_orig="${dir_period}/${gcm}"
+    dir_period="${dir_phase}/${period}"
+    if [[ ${phase} == "3a" ]]; then
+ 	    gcmdir_orig="${dir_period}/${clim}/${gcm}"
+    elif [[ ${phase} == "3b" ]]; then
+ 	    gcmdir_orig="${dir_period}/${gcm}"
+    fi
 
 	# What are all the years in this period?
 	# (will be overwritten using $period_actual, called from submit_child.sh,
@@ -245,6 +274,7 @@ for period in ${period_list}; do
 
 
 done
+done # clim
 
 # Submit jobs, looping through commands that were saved for later
 for ((i=0;i<${#command_list[@]};++i)); do

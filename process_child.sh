@@ -16,7 +16,7 @@ set -e
 #
 # USAGE
 #
-# process_child.sh $phase $period $gcm $period_actual $var $testing $deflate_lvl [$ntest]
+# process_child.sh $phase $period $gcm $period_actual $var $testing $deflate_lvl $gcmdir_orig [$ntest]
 #
 #    phase:   3a or 3b
 #    period:  Period token for directory and file names.
@@ -26,6 +26,7 @@ set -e
 #    var:     Climate variable (e.g.: "pr")
 #    testing: Any value other than 0 will prevent intermediate files from being deleted.
 #    deflate_lvl: Level to which final file should be deflated (compressed). Range 0-9. See netCDF specification for more details.
+#    gcmdir_orig: Directory containing the files before processing to LPJ-GUESS inputs.
 #    ntest:   Set to the number of years you want to include in a test run of this script. Only required (and used) if testing!=0.
 #
 # Looks for files in climate${phase}/${period}/${gcm}/. Note that all letters in this path must be lowercase.
@@ -64,16 +65,7 @@ period=$2
 if [[ "${period}" == "" ]]; then
    echo "You must provide an argument (2nd) for period"
    exit 1
-elif [[ ! -d "${dir_phase}/${period}" ]]; then
-   echo "Second argument (period) must match a dir in ${dir_phase}; ${dir_phase}/${period}/ does not exist."
-   exit 1
 fi
-dir_period="${dir_phase}/${period}"
-if [[ ! -d "${dir_period}/${gcm}" ]]; then
-   echo "Third argument (gcm) must match a dir in ${dir_period}; ${dir_period}/${gcm}/ does not exist."
-   exit 1
-fi
-gcmdir_orig="${dir_period}/${gcm}"
 period_actual=$4
 if [[ "${period_actual}" == "" ]]; then
    echo "You must provide an argument for period_actual"
@@ -95,14 +87,20 @@ if [[ "${deflate_lvl}" == "" ]]; then
    echo "You must provide an argument for deflate_lvl."
    exit 1
 fi
+# The directory where the file is located
+gcmdir_orig="$8"
+if [[ "${gcmdir_orig}" == "" ]]; then
+   echo "You must provide an argument for gcmdir_orig."
+   exit 1
+fi
 # If testing is anything other than zero: Only process the first ${ntest} subperiods.
-ntest=$8
+ntest=$9
 if [[ "${testing}" != 0 ]] && [[ "${ntest}" == "" ]]; then
    echo "You must provide an argument for ntest."
    exit 1
 fi
 # Check for extra arguments
-if [[ "$9" != "" ]]; then
+if [[ "${10}" != "" ]]; then
    echo "Too many arguments detected! Failing."
    exit 1
 fi
