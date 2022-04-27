@@ -115,6 +115,7 @@ testing=0
 partition="iojobs"
 justlist=1
 dependency=""
+depend_after="afterany"
 varlist="hurs pr rsds sfcwind tas tasmax tasmin"
 subperiod_list="picontrol historical ssp126"
 
