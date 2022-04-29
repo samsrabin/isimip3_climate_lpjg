@@ -13,8 +13,6 @@ script="upload_climate_3v2_akm.simple.sh"
 #Declare the number of mandatory args
 margs=1
 
-subperiod_list_all="preind1 preind2 picontrol historical ssp126" # Only need one ssp* to get future subperiod
-
 # Common functions - BEGIN
 function example {
 echo -e "example: $script -s fhlr2 -t 10 -b 5M -x"
@@ -24,15 +22,28 @@ function usage {
 echo -e "usage: $script -s SERVER [-t TIMEOUT -b MAXBANDWIDTH -x]\n"
 }
 
+clim_list="counterclim, obsclim, spinclim, transclim"
+gcm_list="GFDL-ESM4, IPSL-CM6A-LR, MPI-ESM1-2-HR, MRI-ESM2-0, UKESM1-0-LL"
+period_list="3a: historical; 3b: picontrol, historical, ssp126, ssp370, ssp585"
+reanalysis_list="GSWP3-W5E5, 20CRv3, 20CRv3-ERA5, 20CRv3-W5E5"
+vars="hurs pr rsds sfcwind tas tasmax tasmin"
+
 function help {
 usage
 echo -e "MANDATORY:"
 echo -e "  -s, --server  VAL   The shortname of the server we'll be uploading to (fh, uc, mistral, or levante)"
+echo -e "  -f, --phase  VAL   The ISIMIP phase whose forcings we'll be uploading (3a or 3b)"
+echo -e "  -p, --period VAL   The period whose forcings we'll be uploading (${period_list})"
+echo -e "MANDATORY for phase 3a (ignored for 3b):"
+echo -e "  -c, --clim       VAL   The \"clim\" we'll be uploading (${clim_list})"
+echo -e "  -r, --reanalysis VAL   The reanalysis product whose forcings we'll be uploading (${reanalysis_list})"
+echo -e "MANDATORY for phase 3b (ignored for 3a):"
+echo -e "  -g, --gcm        VAL   The global climate model whose forcings we'll be uploading (${gcm_list})"
 echo -e "OPTIONAL:"
-echo -e "  -x, --execute Add this flag to actually start the upload instead of just doing a dry run."
+echo -e "  -x, --execute      Add this flag to actually start the upload instead of just doing a dry run."
+echo -e "  -v, --vars    VAL  List of variables to include (default: \"${vars}\")"
 echo -e "  -t, --timeout VAL  Timeout period for rsync (seconds). Default 15."
 echo -e "  -b, --bwlimit VAL  Bandwidth limit. Default 10 MBps. Specify as number (KBps) or string with unit."
-echo -e "  -h,  --help             Prints this help\n"
 example
 }
 
@@ -72,18 +83,26 @@ timeout=15
 bwlimit="10M"
 gcm=""
 period=""
-vars="hurs pr rsds sfcwind tas tasmax tasmin"
 
 # Args while-loop
 while [ "$1" != "" ];
 do
 	case $1 in
+        -c  | --clim)  shift
+            clim=$1
+            ;;
+        -f  | --phase )  shift
+            phase_in=$1
+            ;;
 		-g  | --gcm)  shift
 			gcm=$1
 			;;
 		-p  | --period)  shift
 			period=$1
 			;;
+        -r  | --reanalysis)  shift
+            reanalysis=$1
+            ;;
 		-s  | --server )  shift
 			server=$1
 			;;
@@ -110,22 +129,81 @@ do
 	esac
 	shift
 done
-ending="*nc4"
+
+# Process options
+lower () {
+    echo "$1" | awk '{print tolower($0)}'
+}
+upper () {
+    echo "$1" | awk '{print toupper($0)}'
+}
+
+# Phase 3a or 3b?
+phase="$(lower "${phase_in}" | sed "s/3//")"
+if [[ "${phase}" == "a" ]]; then
+    phase="3a"
+elif [[ "${phase}" == "b" ]]; then
+    phase="3b"
+elif [[ "${phase_in}" == "" ]]; then
+    echo "You must specify -f/--phase (3)a or (3)b."
+    exit 1
+else
+    echo "Phase ${phase_in} not recognized. Specify (3)a or (3)b."
+    exit 1
+fi
+
+ending=
 if [[ "${gcm}" != "" ]]; then
-    gcm="${gcm}*"
-    ending="nc4"
+    if [[ "${phase}" == "3a" ]]; then
+        echo "-g/--gcm ${gcm} ignored for phase 3a"
+    else
+        gcm="${gcm}*"
+        ending="nc4"
+    fi
+fi
+if [[ "${reanalysis}" != "" ]]; then
+    reanalysis="$(lower ${reanalysis})"
+    if [[ "${phase}" == "3b" ]]; then
+        echo "-r/--reanalysis ${reanalysis} ignored for phase 3b"
+    else
+        reanalysis="${reanalysis}*"
+        ending="nc4"
+    fi
+fi
+if [[ "${clim}" != "" ]]; then
+    clim="$(lower ${clim})"
+    if [[ "${phase}" == "3b" ]]; then
+        echo "-c/--clim ${clim} ignored for phase 3b"
+    else
+        clim="${clim}*"
+        ending="nc4"
+    fi
 fi
 if [[ "${period}" != "" ]]; then
-    period="${period}*"
     ending="nc4"
+    if [[ "${phase}" == "3a" ]]; then
+        if [[ "${period}" == "historical" ]]; then
+            ending="1850_2014.nc4"
+        else
+            echo "Phase 3a: Period ${period} not recognized"
+            exit 1
+        fi
+    elif [[ "${phase}" == "3b" ]]; then
+        period="${period}*"
+    fi
 fi
-if [[ "${ending}" == "nc4" ]]; then
-    beginning="${gcm}${period}"
+if [[ "${ending}" != "" ]]; then
+    if [[ "${phase}" == "3a" ]]; then
+        beginning="${reanalysis}${clim}"
+    elif [[ "${phase}" == "3b" ]]; then
+        beginning="${gcm}${period}"
+    fi
 else
     beginning="*"
+    ending="nc4"
 fi
 for v in ${vars}; do
-    incl_var_list="${incl_var_list} --include=${beginning}_${v}_*nc4" 
+    incl_var_list="${incl_var_list} --include=${beginning}_${v}_*${ending}"
 done
 
 # Pass here your mandatory args for check
@@ -147,7 +225,7 @@ elif [[ "${server}" == "mistral" ]]; then
 elif [[ "${server}" == "levante" ]]; then
 	remote_dir_top="/home/b/b380566/ISIMIP3/climate_land_only_v2"
 elif [[ "${server}" == "uc" ]]; then
-	remote_dir_top="/pfs/work7/workspace/scratch/lr8247-isimip3_climate-0/climate_land_only_v2"
+	remote_dir_top="/pfs/work7/workspace/scratch/lr8247-isimip3_climate_3/climate_land_only_v2"
 else
 	echo "server ${server} not recognized"
 	exit 1
@@ -156,7 +234,12 @@ fi
 # Create that directory, if needed
 ssh ${server} mkdir -p "${remote_dir_top}"
 
-transfertxt="${incl_var_list} --include=*/*-lpjg/ --include=*/*/ --include=*/ --exclude=* * ${server}:${remote_dir_top}/"
+if [[ "${phase}" == "3a" ]]; then
+    otherphase="3b"
+elif [[ "${phase}" == "3b" ]]; then
+    otherphase="3a"
+fi
+transfertxt="${incl_var_list} --exclude=climate${otherphase}/ --include=**/ --exclude=* * ${server}:${remote_dir_top}/"
 
 if [[ ${execute} -eq 0 ]]; then
 	rsync -ah --dry-run -v --stats --partial --prune-empty-dirs ${transfertxt}
