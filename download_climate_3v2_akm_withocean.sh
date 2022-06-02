@@ -34,12 +34,12 @@ function help {
 usage
 echo -e "MANDATORY:"
 echo -e "  -f, --phase  VAL   The ISIMIP phase whose forcings we'll be downloading (3a or 3b)"
-echo -e "  -p, --period VAL   The period whose forcings we'll be downloading (${period_list})"
 echo -e "MANDATORY for phase 3a (ignored for 3b):"
 echo -e "  -c, --clim       VAL   The \"clim\" we'll be downloading (${clim_list})"
 echo -e "  -r, --reanalysis VAL   The reanalysis product whose forcings we'll be downloading (${reanalysis_list})"
 echo -e "MANDATORY for phase 3b (ignored for 3a):"
 echo -e "  -g, --gcm        VAL   The global climate model whose forcings we'll be downloading (${gcm_list})"
+echo -e "  -p, --period VAL   The period whose forcings we'll be downloading (${period_list})"
 echo -e "OPTIONAL:"
 echo -e "  -x, --execute      Add this flag to actually start the upload instead of just doing a dry run."
 echo -e "  -v, --vars    VAL  List of variables to include (default: \"${vars}\")"
@@ -153,16 +153,14 @@ else
     exit 1
 fi
 
-# Period must be specified
-if [[ "${period}" == "" ]]; then
-    echo "You must specify a period with -p/--period (${period_list})"
-    exit 1
-fi
-
 # GCM or reanalysis product, and paths
 if [[ "${phase}" == "3a" ]]; then
     if [[ "${gcm}" != "" ]]; then
         echo "-g/--gcm ${gcm} is ignored for phase 3a"
+    fi
+    if [[ "${period}" != "" && "${period}" != "historical" ]]; then
+        echo "-p/--period ${period} is ignored for phase 3a (only historical is available)"
+        period="historical"
     fi
     if [[ "${reanalysis}" == "" ]]; then
         echo "For phase 3a, you must specify a reanalysis product with -r/--reanalysis (e.g., ${reanalysis_list})"
@@ -186,6 +184,10 @@ elif [[ "${phase}" == "3b" ]]; then
     fi
     if [[ "${gcm}" == "" ]]; then
         echo "For phase 3b, you must specify a gcm product with -g/--gcm (e.g., ${gcm_list})"
+        exit 1
+    fi
+    if [[ "${period}" == "" ]]; then
+        echo "For phase 3b, you must specify a period with -p/--period (e.g., ${period_list})"
         exit 1
     fi
     # Where will the files be on the remote?
