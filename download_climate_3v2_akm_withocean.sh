@@ -209,11 +209,11 @@ done
 include_list="--include=*_hurs_* --include=*_pr_* --include=*_rsds_* --include=*_sfcwind_* --include=*_tas_* --include=*_tasmax_* --include=*_tasmin_*"
 
 if [[ ${execute} -eq 0 ]]; then
-   rsync -ahm --dry-run -v --info=progress2 --ignore-existing  ${include_list} --include="**/" --exclude="*" mistral:${remote_dir} ${local_dir}
+   rsync -ahm --dry-run -v --info=progress2 --ignore-existing  ${include_list} --include="**/" --exclude="*" levante:${remote_dir} ${local_dir}
    echo " "
    echo "Dry run. To actually download, type anything for a third argument."
 else
-    transfertxt="${include_list} --exclude="*" mistral:${remote_dir}/"*" ${local_dir}/"
+    transfertxt="${include_list} --exclude="*" levante:${remote_dir}/"*" ${local_dir}/"
     # Do we need to rsync this file? This does a dry run and counts the number of files that would be transferred.
     notdoneyet=$(rsync -avtn --prune-empty-dirs --ignore-existing  ${transfertxt} | grep $fileext | wc -l)
     ntries=0
