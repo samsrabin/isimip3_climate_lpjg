@@ -156,12 +156,14 @@ fi
 # GCM or reanalysis product, and paths
 if [[ "${phase}" == "3a" ]]; then
     if [[ "${gcm}" != "" ]]; then
-        echo "-g/--gcm ${gcm} is ignored for phase 3a"
+        echo "-g/--gcm ${gcm} is not compatible with phase 3a. Maybe you meant -r/--reanalysis?"
+        exit 1
     fi
     if [[ "${period}" != "" && "${period}" != "historical" ]]; then
-        echo "-p/--period ${period} is ignored for phase 3a (only historical is available)"
-        period="historical"
+        echo "-p/--period ${period} is not compatible with phase 3a; only historical is available. You can leave off this argument."
+        exit 1
     fi
+    period="historical"
     if [[ "${reanalysis}" == "" ]]; then
         echo "For phase 3a, you must specify a reanalysis product with -r/--reanalysis (e.g., ${reanalysis_list})"
         exit 1
@@ -177,10 +179,12 @@ if [[ "${phase}" == "3a" ]]; then
     local_dir=climate3a/${period}/${clim}/${reanalysis}-withocean
 elif [[ "${phase}" == "3b" ]]; then
     if [[ "${clim}" != "" ]]; then
-        echo "-c/--clim ${} is ignored for phase 3b"
+        echo "-c/--clim ${} is not compatible with phase 3b/ Maybe you meant -p/--period?"
+        exit 1
     fi
     if [[ "${reanalysis}" != "" ]]; then
-        echo "-r/--reanalysis ${reanalysis} is ignored for phase 3b"
+        echo "-r/--reanalysis ${reanalysis} is not compatible with phase 3b. Maybe you meant -g/--gcm?"
+        exit 1
     fi
     if [[ "${gcm}" == "" ]]; then
         echo "For phase 3b, you must specify a gcm product with -g/--gcm (e.g., ${gcm_list})"
