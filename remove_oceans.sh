@@ -5,6 +5,8 @@
 #SBATCH -n 1
 module load app/cdo
 
+set -e
+
 # Based on Christoph's script at https://ebi-forecast.igb.illinois.edu/ggcmi/issues/357
 
 unmasked_dir="$1"
