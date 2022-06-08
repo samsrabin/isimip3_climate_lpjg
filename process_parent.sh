@@ -40,7 +40,7 @@ usage
 echo -e "MANDATORY:"
 echo -e "  GCM_OR_REANALYSIS  The GCM(s) (3b) or reanalysis product(s) (3a) to upload. One of (3a) ${products_3a[@]} (3b) ${products_3a[@]}."
 echo -e "OPTIONAL for phase 3a (ignored for 3b):"
-echo -e "  -c, --clim       VAL   The \"clim\" we'll be processing (${clim_list})"
+echo -e "  -c, --clim       VAL   The \"clim\" we'll be processing (default all: ${clim_list})"
 echo -e "OPTIONAL:"
 echo -e "  -d, --dependency JOBNUM  Job number on which the first submitted processing job will depend."
 echo -e "  -p, --periods VAL        Space-separated list of periods to process. Default is all periods for the phase associated with the given GCM or reanalysis product (3a: ${period_list_3a}; 3b: ${period_list_3b})."
