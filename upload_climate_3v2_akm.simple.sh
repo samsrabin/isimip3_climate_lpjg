@@ -31,7 +31,7 @@ vars="hurs pr rsds sfcwind tas tasmax tasmin"
 function help {
 usage
 echo -e "MANDATORY:"
-echo -e "  -s, --server  VAL   The shortname of the server we'll be uploading to (fh, uc, mistral, or levante)"
+echo -e "  -s, --server  VAL   The shortname of the server we'll be uploading to (fh, uc, or levante)"
 echo -e "  -f, --phase  VAL   The ISIMIP phase whose forcings we'll be uploading (3a or 3b)"
 echo -e "  -p, --period VAL   The period whose forcings we'll be uploading (${period_list})"
 echo -e "MANDATORY for phase 3a (ignored for 3b):"
@@ -220,8 +220,6 @@ if [[ "${server}" == "unicluster" ]]; then
 fi
 if [[ "${server}" == "fhlr2" ]] || [[ "${server}" == "fh2" ]] || [[ "${server}" == "fh" ]]; then
 	remote_dir_top="/home/fh2-project-lpjgpi/lr8247/ggcmi/phase3/ISIMIP3/climate_land_only_v2"
-elif [[ "${server}" == "mistral" ]]; then
-	remote_dir_top="/scratch/b/b380566/ISIMIP3/climate_land_only_v2"
 elif [[ "${server}" == "levante" ]]; then
 	remote_dir_top="/home/b/b380566/ISIMIP3/climate_land_only_v2"
 elif [[ "${server}" == "uc" ]]; then
