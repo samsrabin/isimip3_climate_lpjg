@@ -24,7 +24,7 @@ fi
 # If file does not exist, either submit or save for later
 if [ ${does_exist} -eq 0 ]; then
     logfile=${gcmdir_logs}/${thisid}.$(date "+%Y%m%d%H%M%S").log
-    thecommand="sbatch -p ${partition_submit} --mem=${childmem_submit} -n 1 -t 12:00:00 -o ${logfile} -J ${thisid} DEPENDENCY ./${childscript} ${phase} ${period} ${gcm} ${period_actual} ${var} ${testing} ${deflate_lvl} ${gcmdir_orig} ${ntest}"
+    thecommand="sbatch -p ${partition_submit} --mem=${childmem_submit} -n 1 -t 12:00:00 -o ${logfile} -J ${thisid} DEPENDENCY ./${childscript} ${phase} ${period} ${gcm} ${period_actual} ${var} ${testing} ${deflate_lvl} ${gcmdir_orig} ${ntest} ${clim}"
 
     # Submit historical and future sub-periods of picontrol after all other runs
     if [[ ${period} == "picontrol" && ${period_actual} != "picontrol" ]]; then

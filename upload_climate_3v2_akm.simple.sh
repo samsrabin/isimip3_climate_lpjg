@@ -182,12 +182,8 @@ fi
 if [[ "${period}" != "" ]]; then
     ending="nc4"
     if [[ "${phase}" == "3a" ]]; then
-        if [[ "${period}" == "historical" ]]; then
-            ending="1850_2014.nc4"
-        else
-            echo "Phase 3a: Period ${period} not recognized"
-            exit 1
-        fi
+        . ./get_years.sh
+        ending="${firstyear}_${lastyear}.nc4"
     elif [[ "${phase}" == "3b" ]]; then
         period="${period}*"
     fi

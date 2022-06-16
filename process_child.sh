@@ -107,8 +107,14 @@ if [[ "${testing}" != 0 ]] && [[ "${ntest}" == "" ]]; then
    echo "You must provide an argument for ntest."
    exit 1
 fi
+# "clim" must be provided for 3a
+clim=${10}
+if [[ "${phase}" == "3a" ]] && [[ "${clim}" == "" ]]; then
+   echo "You must provide an argument for clim when running process_child.sh for phase 3a."
+   exit 1
+fi
 # Check for extra arguments
-if [[ "${10}" != "" ]]; then
+if [[ "${11}" != "" ]]; then
    echo "Too many arguments detected! Failing."
    exit 1
 fi
