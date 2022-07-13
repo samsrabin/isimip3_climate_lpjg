@@ -217,7 +217,7 @@ include_list="--include=*_hurs_* --include=*_pr_* --include=*_rsds_* --include=*
 if [[ ${execute} -eq 0 ]]; then
    rsync -ahm --dry-run -v --info=progress2 --ignore-existing  ${include_list} --include="**/" --exclude="*" levante:${remote_dir} ${local_dir}
    echo " "
-   echo "Dry run. To actually download, type anything for a third argument."
+   echo "Dry run. To actually download, and -x/--execute flag."
 else
     transfertxt="${include_list} --exclude="*" levante:${remote_dir}/"*" ${local_dir}/"
     # Do we need to rsync this file? This does a dry run and counts the number of files that would be transferred.
