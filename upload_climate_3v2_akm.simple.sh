@@ -219,7 +219,7 @@ if [[ "${server}" == "fhlr2" ]] || [[ "${server}" == "fh2" ]] || [[ "${server}" 
 elif [[ "${server}" == "levante" ]]; then
 	remote_dir_top="/home/b/b380566/ISIMIP3/climate_land_only_v2"
 elif [[ "${server}" == "uc" ]]; then
-	remote_dir_top="/pfs/work7/workspace/scratch/lr8247-isimip3_climate_3/climate_land_only_v2"
+	remote_dir_top="/pfs/work7/workspace/scratch/lr8247-isimip3_climatev2"
 else
 	echo "server ${server} not recognized"
 	exit 1
