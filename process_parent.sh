@@ -110,10 +110,6 @@ containsElement () {
 if [[ "$(containsElement "${gcm}" "${products_3a[@]}")" -eq 1 ]]; then
     phase="3a"
     period_list="${period_list_3a}"
-    if [[ "${gcm}" == "20CRv3"* ]]; then
-        echo "Restricting clim_list for ${gcm} to obsclim only."
-        clim_list="obsclim"
-    fi
 elif [[ "$(containsElement "${gcm}" "${products_3b[@]}")" -eq 1 ]]; then
     phase="3b"
     period_list="${period_list_3b}"
