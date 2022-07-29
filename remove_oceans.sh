@@ -18,6 +18,7 @@ elif [[ ! -e "${unmasked_dir}" ]]; then
     exit 1
 fi
 masked_dir="${unmasked_dir/-withocean/}"
+masked_dir="$(realpath ${masked_dir})"
 mkdir -p "${masked_dir}"
 tmp="${masked_dir}/tmp.nc"
 
