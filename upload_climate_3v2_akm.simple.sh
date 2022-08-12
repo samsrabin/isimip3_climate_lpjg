@@ -233,7 +233,7 @@ if [[ "${phase}" == "3a" ]]; then
 elif [[ "${phase}" == "3b" ]]; then
     otherphase="3a"
 fi
-transfertxt="${incl_var_list} --exclude=climate${otherphase}/ --include=**/ --exclude=* * ${server}:${remote_dir_top}/"
+transfertxt="${incl_var_list} --exclude=climate${otherphase}/ --exclude=**/*-bad/ --include=**/ --exclude=* * ${server}:${remote_dir_top}/"
 
 if [[ ${execute} -eq 0 ]]; then
 	rsync -ah --dry-run -v --stats --partial --prune-empty-dirs ${transfertxt}
