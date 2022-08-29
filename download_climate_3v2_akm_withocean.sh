@@ -226,7 +226,7 @@ else
     theproblem=" "
 
     if [[ ${notdoneyet} -gt 0 ]]; then
-       echo Starting $d
+       echo Starting $local_dir
        while [[ ${notdoneyet} -gt 0 ]]; do
           ntries=$((ntries+1))
           if [[ ${ntries} -gt 1 ]]; then
@@ -245,9 +245,9 @@ else
           set -e
           notdoneyet=$(rsync -avtn --prune-empty-dirs --ignore-existing  ${transfertxt} | grep $fileext | wc -l)
        done
-       echo Done with $d
+       echo Done with $local_dir
     else
-       echo Skipping $d
+       echo Skipping $local_dir
     fi
 fi
 
