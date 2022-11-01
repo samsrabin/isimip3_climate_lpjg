@@ -42,6 +42,7 @@ echo -e "  -g, --gcm        VAL   The global climate model whose forcings we'll 
 echo -e "  -p, --period VAL   The period whose forcings we'll be downloading (${period_list})"
 echo -e "OPTIONAL:"
 echo -e "  -x, --execute      Add this flag to actually start the upload instead of just doing a dry run."
+echo -e "  -2, --secondary    Add this flag to lookin SecondaryInputData instead of InputData."
 echo -e "  -v, --vars    VAL  List of variables to include (default: \"${vars}\")"
 echo -e "  -t, --timeout VAL  Timeout period for rsync (seconds). Default 15."
 echo -e "  -b, --bwlimit VAL  Bandwidth limit. Default 10 MBps. Specify as number (KBps) or string with unit."
@@ -80,6 +81,7 @@ margs_precheck $# $1
 
 # Set default values
 execute=0
+secondary=0
 timeout=15
 bwlimit="10M"
 gcm=""
@@ -111,6 +113,8 @@ do
             vars="$1"
             ;;
         -x  | --execute  )  execute=1
+            ;;
+        -2  | --secondary )  secondary=1
             ;;
         -t  | --timeout)  shift
             timeout=$1
@@ -195,7 +199,11 @@ elif [[ "${phase}" == "3b" ]]; then
         exit 1
     fi
     # Where will the files be on the remote?
-    remote_dir=/work/bb0820/ISIMIP/ISIMIP3b/InputData/climate/atmosphere/bias-adjusted/global/daily/${period}/${gcm}
+    if [[ ${secondary} -eq 1 ]]; then
+        remote_dir=/work/bb0820/ISIMIP/ISIMIP3b/SecondaryInputData/climate/atmosphere/bias-adjusted/global/daily/${period}/${gcm}
+    else
+        remote_dir=/work/bb0820/ISIMIP/ISIMIP3b/InputData/climate/atmosphere/bias-adjusted/global/daily/${period}/${gcm}
+    fi
     
     # Where will we be downloading to?
     local_dir=climate3b/${period}/${gcm}-withocean
