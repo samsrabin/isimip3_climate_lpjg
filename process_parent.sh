@@ -113,7 +113,7 @@ if [[ "$(containsElement "${gcm}" "${products_3a[@]}")" -eq 1 ]]; then
 elif [[ "$(containsElement "${gcm}" "${products_3b[@]}")" -eq 1 ]]; then
     phase="3b"
     period_list="${period_list_3b}"
-    clim_list=""
+    clim_list="dummy"
 else
     echo "Phase not known for GCM/reanalysis product ${gcm}"
     exit 1
@@ -181,9 +181,9 @@ margs_check $gcm
 # End function-parsing code
 #########################################################################
 
-if [[ ${phase} == "3b" && "${clim_list}" != "" ]]; then
+if [[ ${phase} == "3b" && "${clim_list}" != "dummy" ]]; then
     echo "-c/--clim ${clim} is ignored for phase 3b"
-    clim_list=""
+    clim_list="dummy"
 fi
 
 # Which child script to use?
