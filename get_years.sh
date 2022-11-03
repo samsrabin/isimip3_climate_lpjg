@@ -19,7 +19,7 @@ elif [[ "${phase}" == "3b" ]]; then
     if [[ "${period}" == "historical" || "${period_actual}" == "historical" ]]; then
        firstyear=1850
        lastyear=2014
-    elif [[ "${period}" == "ssp126" || "${period}" == "ssp370" || "${period}" == "ssp585" || "${period_actual}" == "ssp126" || "${period_actual}" == "ssp370" || "${period_actual}" == "ssp585" ]]; then
+    elif [[ "${period}" == "ssp"* || "${period_actual}" == "ssp"* ]]; then
        firstyear=2015
        lastyear=2100
     elif [[ "${period}" == "picontrol" ]]; then
