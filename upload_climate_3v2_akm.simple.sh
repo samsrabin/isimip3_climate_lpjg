@@ -24,7 +24,7 @@ echo -e "usage: $script -s SERVER [-t TIMEOUT -b MAXBANDWIDTH -x]\n"
 
 clim_list="counterclim, obsclim, spinclim, transclim"
 gcm_list="GFDL-ESM4, IPSL-CM6A-LR, MPI-ESM1-2-HR, MRI-ESM2-0, UKESM1-0-LL"
-period_list="3a: historical; 3b: picontrol, historical, ssp126, ssp370, ssp585"
+period_list="3a: historical; 3b: picontrol, historical, sspXXX"
 reanalysis_list="GSWP3-W5E5, 20CRv3, 20CRv3-ERA5, 20CRv3-W5E5"
 vars="hurs pr rsds sfcwind tas tasmax tasmin"
 
@@ -33,7 +33,7 @@ usage
 echo -e "MANDATORY:"
 echo -e "  -s, --server  VAL   The shortname of the server we'll be uploading to (fh, uc, or levante)"
 echo -e "  -f, --phase  VAL   The ISIMIP phase whose forcings we'll be uploading (3a or 3b)"
-echo -e "  -p, --period VAL   The period whose forcings we'll be uploading (${period_list})"
+echo -e "  -p, --period VAL   The period whose forcings we'll be uploading (one of ${period_list})"
 echo -e "MANDATORY for phase 3a (ignored for 3b):"
 echo -e "  -c, --clim       VAL   The \"clim\" we'll be uploading (${clim_list})"
 echo -e "  -r, --reanalysis VAL   The reanalysis product whose forcings we'll be uploading (${reanalysis_list})"
