@@ -157,7 +157,7 @@ if [[ "${gcm}" != "" ]]; then
     if [[ "${phase}" == "3a" ]]; then
         echo "-g/--gcm ${gcm} ignored for phase 3a"
     else
-        gcm="${gcm}*"
+        gcm="${gcm,,}*" # ,, converts to lowercase
         ending="nc4"
     fi
 fi
