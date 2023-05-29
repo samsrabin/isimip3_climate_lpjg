@@ -76,6 +76,12 @@ fi
 }
 # Common functions - END
 
+# Make sure that ISIMIP3_CLIMATE_DIR is defined
+if [[ "${ISIMIP3_CLIMATE_DIR}" == "" ]]; then
+    echo "You must define ISIMIP3_CLIMATE_DIR in your .bash_profile." >&2
+    exit 1
+fi
+
 # Main
 margs_precheck $# $1
 
@@ -208,6 +214,7 @@ elif [[ "${phase}" == "3b" ]]; then
     # Where will we be downloading to?
     local_dir=climate3b/${period}/${gcm}-withocean
 fi
+local_dir="${ISIMIP3_CLIMATE_DIR}/${local_dir}"
 mkdir -p "${local_dir}"
 
 # Make sure GCM name is uppercase
