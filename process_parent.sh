@@ -38,7 +38,7 @@ products_3b=("GFDL-ESM4" "IPSL-CM6A-LR" "MPI-ESM1-2-HR" "MRI-ESM2-0" "UKESM1-0-L
 function help {
 usage
 echo -e "MANDATORY:"
-echo -e "  GCM_OR_REANALYSIS  The GCM(s) (3b) or reanalysis product(s) (3a) to upload. One of (3a) ${products_3a[@]} (3b) ${products_3a[@]}."
+echo -e "  GCM_OR_REANALYSIS  The GCM(s) (3b) or reanalysis product(s) (3a) to upload. One of (3a) ${products_3a[@]} (3b) ${products_3b[@]}."
 echo -e "OPTIONAL for phase 3a (ignored for 3b):"
 echo -e "  -c, --clim       VAL   The \"clim\" we'll be processing (default all: ${clim_list})"
 echo -e "OPTIONAL:"
@@ -120,9 +120,15 @@ else
 fi
 dir_phase="climate${phase}"
 
+# Make sure that ISIMIP3_CLIMATE_PROCESSING_QUEUE is defined
+if [[ "${ISIMIP3_CLIMATE_PROCESSING_QUEUE}" == "" ]]; then
+    echo "You must define ISIMIP3_CLIMATE_PROCESSING_QUEUE in your .bash_profile." >&2
+    exit 1
+fi
+
 # Set other default values
 testing=0
-partition="iojobs"
+partition="${ISIMIP3_CLIMATE_PROCESSING_QUEUE}"
 justlist=1
 dependency=""
 depend_after="afterany"
