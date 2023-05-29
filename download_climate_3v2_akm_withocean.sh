@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH -n 1
-#SBATCH -p iojobs
 #SBATCH -t 48:00:00
 set -e
 

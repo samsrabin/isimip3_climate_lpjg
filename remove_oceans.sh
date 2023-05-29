@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH --mem 32G
-#SBATCH -p sandy
 #SBATCH -t 24:00:00
 #SBATCH -n 1
 module load app/cdo
