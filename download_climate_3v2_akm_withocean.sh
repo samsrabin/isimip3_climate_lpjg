@@ -44,7 +44,7 @@ echo -e "  -x, --execute      Add this flag to actually start the upload instead
 echo -e "  -2, --secondary    Add this flag to lookin SecondaryInputData instead of InputData."
 echo -e "  -v, --vars    VAL  List of variables to include (default: \"${vars}\")"
 echo -e "  -t, --timeout VAL  Timeout period for rsync (seconds). Default 15."
-echo -e "  -b, --bwlimit VAL  Bandwidth limit. Default 10 MBps. Specify as number (KBps) or string with unit."
+echo -e "  -b, --bwlimit VAL  Bandwidth limit. Default 10 MBps. Specify as number (KBps) or string with unit (e.g., '10M'.)"
 echo -e "  -h,  --help             Prints this help\n"
 example
 }
@@ -214,7 +214,9 @@ elif [[ "${phase}" == "3b" ]]; then
     local_dir=climate3b/${period}/${gcm}-withocean
 fi
 local_dir="${ISIMIP3_CLIMATE_DIR}/${local_dir}"
-mkdir -p "${local_dir}"
+if [[ ! -d "${local_dir}" ]]; then
+    mkdir -p "${local_dir}"
+fi
 
 # Make sure GCM name is uppercase
 #gcm=$(echo "$gcm" | tr '[:upper:]' '[:lower:]')
@@ -231,7 +233,7 @@ include_list="--include=*_hurs_* --include=*_pr_* --include=*_rsds_* --include=*
 if [[ ${execute} -eq 0 ]]; then
    rsync -ahm --dry-run -v --info=progress2 --ignore-existing  ${include_list} --include="**/" --exclude="*" levante:${remote_dir} ${local_dir}
    echo " "
-   echo "Dry run. To actually download, and -x/--execute flag."
+   echo "Dry run. To actually download, add -x/--execute flag."
 else
     transfertxt="${include_list} --exclude="*" levante:${remote_dir}/"*" ${local_dir}/"
     # Do we need to rsync this file? This does a dry run and counts the number of files that would be transferred.
