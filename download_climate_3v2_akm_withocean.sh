@@ -211,7 +211,7 @@ elif [[ "${phase}" == "3b" ]]; then
     fi
     
     # Where will we be downloading to?
-    local_dir=climate3b/${period}/${gcm}-withocean
+    local_dir=climate3b/${period}/${gcm}-withocean/
 fi
 local_dir="${ISIMIP3_CLIMATE_DIR}/${local_dir}"
 if [[ ! -d "${local_dir}" ]]; then
@@ -229,12 +229,12 @@ for v in ${vars}; do
     include_list="${include_list} --include=*_${v}_*"
 done
 
+transfertxt="${include_list} --exclude="*" levante:${remote_dir}/"*" ${local_dir}/"
 if [[ ${execute} -eq 0 ]]; then
-   rsync -ahm --dry-run -v --info=progress2 --ignore-existing  ${include_list} --include="**/" --exclude="*" levante:${remote_dir} ${local_dir}
+   rsync -ahm --dry-run -v --info=progress2 --ignore-existing  ${transfertxt}
    echo " "
    echo "Dry run. To actually download, add -x/--execute flag."
 else
-    transfertxt="${include_list} --exclude="*" levante:${remote_dir}/"*" ${local_dir}/"
     # Do we need to rsync this file? This does a dry run and counts the number of files that would be transferred.
     notdoneyet=$(rsync -avtn --prune-empty-dirs --ignore-existing  ${transfertxt} | grep $fileext | wc -l)
     ntries=0
