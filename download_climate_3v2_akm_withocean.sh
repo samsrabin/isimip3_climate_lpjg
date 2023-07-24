@@ -228,7 +228,6 @@ include_list=""
 for v in ${vars}; do
     include_list="${include_list} --include=*_${v}_*"
 done
-include_list="--include=*_hurs_* --include=*_pr_* --include=*_rsds_* --include=*_sfcwind_* --include=*_tas_* --include=*_tasmax_* --include=*_tasmin_*"
 
 if [[ ${execute} -eq 0 ]]; then
    rsync -ahm --dry-run -v --info=progress2 --ignore-existing  ${include_list} --include="**/" --exclude="*" levante:${remote_dir} ${local_dir}
