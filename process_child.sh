@@ -33,9 +33,8 @@ set -e
 
 
 #module unload io/netcdf/4.4.2-rc1-intel-15.0.4-serial
-#module load app/cdo/1.9.5
-module load app/cdo/1.9.9
-module load app/nco/4.7.8
+module load app/cdo
+module load app/nco
 
 module list
 
