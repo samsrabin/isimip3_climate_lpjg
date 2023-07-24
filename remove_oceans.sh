@@ -2,9 +2,10 @@
 #SBATCH --mem 32G
 #SBATCH -t 24:00:00
 #SBATCH -n 1
-module load app/cdo
 
 set -e
+
+. ./load_modules_if_needed.sh
 
 # Based on Christoph's script at https://ebi-forecast.igb.illinois.edu/ggcmi/issues/357
 

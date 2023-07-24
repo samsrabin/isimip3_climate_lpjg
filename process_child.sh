@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# Is cdo module needed?
+cdo --help 1>/dev/null 2>&1
+cdo_missing=$?
+
 set -e
 
 ###############################################################
@@ -32,10 +37,7 @@ set -e
 ###############################################################
 
 
-#module unload io/netcdf/4.4.2-rc1-intel-15.0.4-serial
-module load app/cdo
-module load app/nco
-
+. ./load_modules_if_needed.sh
 module list
 
 # Info for optimizing command parameters
