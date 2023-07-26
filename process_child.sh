@@ -37,7 +37,7 @@ set -e
 ###############################################################
 
 
-. ./load_modules_if_needed.sh
+. load_modules_if_needed.sh
 module list
 
 # Info for optimizing command parameters

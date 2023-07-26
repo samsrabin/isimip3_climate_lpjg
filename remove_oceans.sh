@@ -5,7 +5,7 @@
 
 set -e
 
-. ./load_modules_if_needed.sh
+. load_modules_if_needed.sh
 
 # Based on Christoph's script at https://ebi-forecast.igb.illinois.edu/ggcmi/issues/357
 

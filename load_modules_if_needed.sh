@@ -6,7 +6,7 @@ else
 fi
 
 # Are modules needed?
-cdo --help 1>/dev/null 2>&1
+cdo -V 1>/dev/null 2>&1
 cdo_missing=$?
 ncrename --help 1>/dev/null 2>&1
 nco_missing=$?
