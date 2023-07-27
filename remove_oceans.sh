@@ -37,7 +37,7 @@ for unmasked_file in *.nc; do
     
     # workaround from https://stackoverflow.com/questions/39058260/create-a-netcdf-file-with-data-masked-to-retain-land-points-only
     # (About 4 minutes per file on sandy)
-    cdo -z zip_6 div "${unmasked_file}" /pd/data/lpj/sam/ISIMIP3/inputs/seamask.nc "${tmp}"
+    cdo -z zip_6 div "${unmasked_file}" "${ISIMIP3_CLIMATE_DIR}/misc/seamask.nc" "${tmp}"
 
     mv "${tmp}" "${masked_file}"
     rm "${unmasked_file}"
