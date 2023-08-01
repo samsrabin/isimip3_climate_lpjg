@@ -82,6 +82,13 @@ fi
 # Main
 margs_precheck $# $1
 
+if [[ "${ISIMIP3_CLIMATE_DIR}" == "" ]]; then
+    echo "Warning: \$ISIMIP3_CLIMATE_DIR not specified. Will assume you're calling process_parent.sh from the directory containing climate3a/ and/or climate3b/."
+elif [[ ! -d "${ISIMIP3_CLIMATE_DIR}" ]]; then
+    echo "\$ISIMIP3_CLIMATE_DIR does not exist: ${ISIMIP3_CLIMATE_DIR}" >&2
+    exit 1
+fi
+
 # Get GCM (or reanalysis product)
 gcm=$1
 if [[ "${gcm}" == "" ]]; then
@@ -118,7 +125,7 @@ else
     echo "Phase not known for GCM/reanalysis product ${gcm}"
     exit 1
 fi
-dir_phase="climate${phase}"
+dir_phase="${ISIMIP3_CLIMATE_DIR}/climate${phase}"
 
 # Make sure that ISIMIP3_CLIMATE_PROCESSING_QUEUE is defined
 if [[ "${ISIMIP3_CLIMATE_PROCESSING_QUEUE}" == "" ]]; then
@@ -193,6 +200,8 @@ if [[ ${phase} == "3b" && "${clim_list}" != "dummy" ]]; then
 fi
 
 # Which child script to use?
+script_dir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+cd "${script_dir}"
 childscript=process_child.sh
 
 # Set up testing vs. not
