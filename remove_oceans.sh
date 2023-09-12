@@ -3,9 +3,9 @@
 #SBATCH -t 24:00:00
 #SBATCH -n 1
 
-set -e
-
+set +e
 . load_modules_if_needed.sh
+set -e
 
 # Based on Christoph's script at https://ebi-forecast.igb.illinois.edu/ggcmi/issues/357
 
