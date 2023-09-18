@@ -4,8 +4,6 @@
 cdo --help 1>/dev/null 2>&1
 cdo_missing=$?
 
-set -e
-
 ###############################################################
 # SUMMARY
 #
@@ -36,8 +34,9 @@ set -e
 #
 ###############################################################
 
-
+set +e
 . load_modules_if_needed.sh
+set -e
 module list
 
 # Info for optimizing command parameters
